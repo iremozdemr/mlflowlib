@@ -6,7 +6,6 @@
 # #twine upload dist/*
 
 import mlflow
-import mlflow.keras
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
@@ -24,52 +23,21 @@ class LossAndErrorPrintingCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         mlflow.log_metrics(logs, step=epoch)
 
-def setup_mlflow(
-    tracking_uri: str,
-    experiment_name: str,
-    model: 'tf.keras.Model',
-    batch_size: int,
-    epochs: int,
-    run_name: str,
-    autolog: bool = False,
-    additional_params: dict = None,
-):
-    """
-    Sets up MLflow tracking, logs parameters, and prepares for logging model training metrics.
-
-    Args:
-        tracking_uri (str): MLflow tracking URI.
-        experiment_name (str): Name of the experiment in MLflow.
-        model (tf.keras.Model): The Keras model to be logged.
-        batch_size (int): Size of batches during training.
-        epochs (int): Number of epochs for training.
-        run_name (str): Name of the run in MLflow.
-        autolog (bool): Whether to enable autologging.
-        additional_params (dict): Additional parameters to log.
-
-    Returns:
-        None.
-    """
-    # Set up MLflow
+def start_mlflow(tracking_uri, experiment_name, run_name, params, autolog=False, model=None, model_name=None):
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
 
     if autolog:
-        mlflow.keras.autolog(log_models=False)
+        mlflow.tensorflow.autolog(log_models=True)
+    else:
+        mlflow.tensorflow.autolog(log_models=False)
 
     with mlflow.start_run(run_name=run_name) as run:
-        # Log parameters
-        mlflow.log_param("batch_size", batch_size)
-        mlflow.log_param("epochs", epochs)
+        # Parametreleri logla
+        for key, value in params.items():
+            mlflow.log_param(key, value)
 
-        # Log additional parameters if any
-        if additional_params:
-            for key, value in additional_params.items():
-                mlflow.log_param(key, value)
-
-        # Log the model
-        mlflow.keras.log_model(model, "model")
-
+        # Oturum bilgilerini yazdır
         print("####################")
         print("run info: ")
         print("####################")
@@ -78,3 +46,5 @@ def setup_mlflow(
         print("end time:", run.info.end_time)
         print("status:", run.info.status)
         print("user id:", run.info._user_id)
+
+        return run  # Oturum nesnesini döndür
