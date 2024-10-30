@@ -30,47 +30,43 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Flatten
 from tensorflow.keras.models import Model
-from mlflowlib.training import log_experiment
+from mlflowlib import training
 
-# Rastgele sayısal veri üreten fonksiyon
-def generate_data(samples, input_shape, output_shape):
-    """Rastgele sayısal veri üreten fonksiyon."""
-    # Girdi verisi
+# Generate random data
+def generate_data(samples, input_shape):
     X = np.random.rand(samples, *input_shape).astype(np.float32)
-    # Hedef çıktı verisi
-    y = np.random.rand(samples, *output_shape).astype(np.float32)  # Hedef çıktı
+    y = np.random.rand(samples, 1).astype(np.float32)  # Example output shape
     return X, y
 
-# Örnek kullanım
+# Example usage
 if __name__ == "__main__":
-    # Parametreleri tanımla
     run_name = "example_run"
     tracking_uri = "http://localhost:5000"
     experiment_name = 'example_experiment'
     batch_size = 32
     epochs = 10
-    samples = 1000  # Eğitim verisi örnek sayısı
-    input_shape = (10,)  # Giriş verisi boyutu (örneğin 10 özellik)
-    output_shape = (1,)  # Çıktı boyutu (örneğin 1 hedef)
+    samples = 1000
+    input_shape = (10,)
 
-    # Veri setini oluştur
-    X, y = generate_data(samples, input_shape=input_shape, output_shape=output_shape)
+    X, y = generate_data(samples, input_shape)
 
-    # Model mimarisini tanımla
+    # Define model architecture
     input_data = Input(shape=input_shape)
     x = Flatten()(input_data)
     x = Dense(64, activation='relu')(x)
     x = Dense(32, activation='relu')(x)
-    output = Dense(output_shape[0], activation='linear')(x)  # Çıktı katmanı
+    output = Dense(1, activation='linear')(x)
     model = Model(inputs=input_data, outputs=output)
     model.compile(optimizer='adam', loss='mse')
 
-    # Modeli eğitmek için log_experiment fonksiyonunu kullan
-    log_experiment(model=model, 
-                   batch_size=batch_size, 
-                   epochs=epochs, 
-                   run_name=run_name,
-                   tracking_uri=tracking_uri,
-                   experiment_name=experiment_name,
-                   additional_params={'param1': 'value1'})  # İsteğe bağlı ek parametreler
+    # Set up MLflow tracking
+    training.setup_mlflow(
+        tracking_uri=tracking_uri,
+        experiment_name=experiment_name,
+        model=model,
+        batch_size=batch_size,
+        epochs=epochs,
+        run_name=run_name,
+        additional_params={'param1': 'value1'}
+    )
 ```
