@@ -129,11 +129,11 @@ class LossAndErrorPrintingCallback(Callback):
         mlflow.log_metrics(logs, step=epoch)
 
 def log_experiment(model: tf.keras.Model, 
-                   train_generator, 
-                   test_generator, 
-                   batch_size: int, 
-                   epochs: int,
-                   run_name: str,
+                   train_data=None, 
+                   test_data=None, 
+                   batch_size: int = 32,  # Varsayılan değer eklenmiştir
+                   epochs: int = 10,  # Varsayılan değer eklenmiştir
+                   run_name: str = "Default_Run",  # Varsayılan değer eklenmiştir
                    tracking_uri: str = "http://localhost:5000",
                    experiment_name: str = "Default_Experiment",
                    autolog: bool = False,
@@ -142,11 +142,11 @@ def log_experiment(model: tf.keras.Model,
 
     Args:
         model (tf.keras.Model): The Keras model to be trained.
-        train_generator: The training data generator.
-        test_generator: The validation data generator.
-        batch_size (int): Size of batches during training.
-        epochs (int): Number of epochs for training.
-        run_name (str): Name of the run in MLflow.
+        train_data: The training data generator or a tuple of (X, y).
+        test_data: The validation data generator or a tuple of (X, y).
+        batch_size (int): Size of batches during training. Defaults to 32.
+        epochs (int): Number of epochs for training. Defaults to 10.
+        run_name (str): Name of the run in MLflow. Defaults to "Default_Run".
         tracking_uri (str): MLflow tracking URI. Defaults to "http://localhost:5000".
         experiment_name (str): Name of the experiment in MLflow. Defaults to "Default_Experiment".
         autolog (bool): Whether to enable autologging. Defaults to False.
@@ -174,17 +174,32 @@ def log_experiment(model: tf.keras.Model,
             mlflow.log_param(key, value)
 
         # Train the model
-        history = model.fit(
-            train_generator,
-            epochs=epochs,
-            steps_per_epoch=len(train_generator),
-            validation_data=test_generator,
-            callbacks=[
-                LearningRateLogger(),
-                LossAndErrorPrintingCallback()
-            ]
-        )
-        
+        if train_data is not None and test_data is not None:
+            # If generators are provided, use them
+            history = model.fit(
+                train_data,
+                epochs=epochs,
+                batch_size=batch_size,
+                validation_data=test_data,
+                callbacks=[
+                    LearningRateLogger(),
+                    LossAndErrorPrintingCallback()
+                ]
+            )
+        else:
+            # If data is provided as numpy arrays
+            history = model.fit(
+                train_data[0],  # X
+                train_data[1],  # y
+                epochs=epochs,
+                batch_size=batch_size,
+                validation_data=(test_data[0], test_data[1]) if test_data else None,
+                callbacks=[
+                    LearningRateLogger(),
+                    LossAndErrorPrintingCallback()
+                ]
+            )
+
         # Log the model
         mlflow.keras.log_model(model, "model")
         return history

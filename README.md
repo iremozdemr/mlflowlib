@@ -22,43 +22,25 @@ pip install gtek_mlflow
 Below is an example of how to use the `train_model` function from the package with a simple TensorFlow data generator.
 
 ```python
-from mlflow_utils import log_experiment
-import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv3D, Flatten, Dense, Reshape, Concatenate
-from tensorflow.keras.models import Model
-
-# Example usage
 if __name__ == "__main__":
-    # Define parameters
     run_name = "run_name_demo"
-    tracking_uri = "http:your/url"
+    tracking_uri = "http://192.168.13.79:5000"
     experiment_name = 'experiment_name_demo'
     batch_size = 32
     epochs = 7
+    turbine_total_count = 2
+    samples = 100  # Eğitim verisi örnek sayısı
 
-    # Define model architecture
-    input_images = Input(shape=(8, 670, 1413, 3), name='image_input')
-    x = Conv3D(64, kernel_size=(3, 3, 3), strides=(4, 4, 4), activation='relu', padding='same')(input_images)
-    x = Conv3D(32, kernel_size=(3, 3, 3), strides=(4, 4, 4), activation='relu', padding='same')(x)
-    x = Conv3D(16, kernel_size=(3, 3, 3), strides=(4, 4, 4), activation='relu', padding='same')(x)
-    x = Flatten()(x)
+    # Örnek veri oluşturma
+    (X_images, X_wind_speeds), y = generate_data(samples, input_shape=(8, 100, 100, 3), turbine_count=turbine_total_count)
 
-    input_wind_speeds = Input(shape=(turbine_total_count, 24), name='wind_speed_input')
-    flattened_wind_speeds = Flatten()(input_wind_speeds)  
+    # Model mimarisini tanımlama
+    model = ...  # Modelinizi burada tanımlayın
 
-    combined = Concatenate()([x, flattened_wind_speeds])
-    combined = Dense(128, activation='relu')(combined)
-    combined = Dense(64, activation='relu')(combined)
-    output = Dense(turbine_total_count * 24, activation='linear')(combined)
-    output = Reshape((turbine_total_count, 24))(output)
-    
-    model = Model(inputs=[input_images, input_wind_speeds], outputs=output)
-    model.compile(optimizer='adam', loss='mse')
-
-    # Train the model using the log_experiment function
+    # Modeli eğitmek için log_experiment fonksiyonunu kullan
     log_experiment(model=model, 
-                   train_generator=train_generator, 
-                   test_generator=test_generator, 
+                   train_data=(X_images, y),  # Sayısal veri kullanıyoruz
+                   test_data=(X_wind_speeds, y),  # Test verisi
                    batch_size=batch_size, 
                    epochs=epochs, 
                    run_name=run_name,
