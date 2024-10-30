@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name='mlflowlib',
     packages=find_packages(include=['mlflowlib']),
-    version='1.6',
+    version='1.7',
     license='MIT',    
     description='a general-purpose python package with MLflow integration',
     author='irem ozdemir',
@@ -14,5 +14,5 @@ setup(
         'tensorflow>=2.5.0',  
     ],
     url = 'https://github.com/iremozdemr/mlflowlib', 
-    download_url = 'https://github.com/iremozdemr/mlflowlib/archive/refs/tags/1.6.tar.gz',
+    download_url = 'https://github.com/iremozdemr/mlflowlib/archive/refs/tags/1.7.tar.gz',
 )

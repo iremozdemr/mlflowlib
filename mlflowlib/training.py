@@ -23,7 +23,7 @@ class LossAndErrorPrintingCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         mlflow.log_metrics(logs, step=epoch)
 
-def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, autolog: bool = False, model=None, model_name: str = None):
+def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, autolog: bool = False):
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
 
@@ -36,5 +36,3 @@ def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params:
 
     for key, value in params.items():
         mlflow.log_param(key, value)
-
-    mlflow.keras.log_model(model,model_name)
