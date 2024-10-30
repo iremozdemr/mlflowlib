@@ -23,7 +23,7 @@ class LossAndErrorPrintingCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         mlflow.log_metrics(logs, step=epoch)
 
-def start_mlflow(tracking_uri, experiment_name, run_name, params, autolog=False, model=None, model_name=None):
+def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, autolog: bool = False, model=None, model_name: str = None):
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
 
@@ -46,5 +46,7 @@ def start_mlflow(tracking_uri, experiment_name, run_name, params, autolog=False,
         print("end time:", run.info.end_time)
         print("status:", run.info.status)
         print("user id:", run.info._user_id)
+
+        mlflow.keras.log_model(model,model_name)
 
         return run  # Oturum nesnesini döndür

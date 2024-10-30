@@ -32,21 +32,9 @@ def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params:
     else:
         mlflow.tensorflow.autolog(log_models=False)
 
-    with mlflow.start_run(run_name=run_name) as run:
-        # Parametreleri logla
-        for key, value in params.items():
-            mlflow.log_param(key, value)
+    mlflow.start_run(run_name=run_name) 
 
-        # Oturum bilgilerini yazdır
-        print("####################")
-        print("run info: ")
-        print("####################")
-        print("run id: ", run.info.run_id)
-        print("start time:", run.info.start_time)
-        print("end time:", run.info.end_time)
-        print("status:", run.info.status)
-        print("user id:", run.info._user_id)
+    for key, value in params.items():
+        mlflow.log_param(key, value)
 
-        mlflow.keras.log_model(model,model_name)
-
-        return run  # Oturum nesnesini döndür
+    mlflow.keras.log_model(model,model_name)
