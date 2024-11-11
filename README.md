@@ -23,50 +23,7 @@ pip install mlflowlib==[version-number]
 
 ## Example Usage
 
-Below is an example of how to use the `train_model` function from the package with a simple TensorFlow data generator.
+Below is an example of how to use the `start_mlflow` function from the package 
 
 ```python
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Flatten
-from tensorflow.keras.models import Model
-from mlflowlib import training
-
-# Generate random data
-def generate_data(samples, input_shape):
-    X = np.random.rand(samples, *input_shape).astype(np.float32)
-    y = np.random.rand(samples, 1).astype(np.float32)  # Example output shape
-    return X, y
-
-# Example usage
-if __name__ == "__main__":
-    run_name = "example_run"
-    tracking_uri = "http://localhost:5000"
-    experiment_name = 'example_experiment'
-    batch_size = 32
-    epochs = 10
-    samples = 1000
-    input_shape = (10,)
-
-    X, y = generate_data(samples, input_shape)
-
-    # Define model architecture
-    input_data = Input(shape=input_shape)
-    x = Flatten()(input_data)
-    x = Dense(64, activation='relu')(x)
-    x = Dense(32, activation='relu')(x)
-    output = Dense(1, activation='linear')(x)
-    model = Model(inputs=input_data, outputs=output)
-    model.compile(optimizer='adam', loss='mse')
-
-    # Set up MLflow tracking
-    training.setup_mlflow(
-        tracking_uri=tracking_uri,
-        experiment_name=experiment_name,
-        model=model,
-        batch_size=batch_size,
-        epochs=epochs,
-        run_name=run_name,
-        additional_params={'param1': 'value1'}
-    )
 ```
