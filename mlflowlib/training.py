@@ -32,37 +32,27 @@ def start_mlflow(
     params: dict,
     autolog: bool = False,
     using_tensor: bool = False,
-    using_xgboost: bool = True,
+    using_xgboost: bool = False,
 ):
-    """Context manager for starting an MLflow run.
-    
-    Args:
-        tracking_uri (str): MLflow tracking URI.
-        experiment_name (str): Experiment name.
-        run_name (str): Run name.
-        params (dict): Parameters to log.
-        autolog (bool): Enable or disable autologging.
-        using_tensor (bool): Enable TensorFlow autologging.
-        using_xgboost (bool): Enable XGBoost autologging.
-
-    Yields:
-        run: MLflow active run.
-    """
+    """Context manager for starting an MLflow run."""
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
-    
-    with mlflow.start_run(run_name=run_name) as run:
-        # TensorFlow autolog
-        if using_tensor:
-            mlflow.tensorflow.autolog(log_models=autolog)
-        # XGBoost autolog
-        if using_xgboost:
-            mlflow.xgboost.autolog(log_models=autolog)
 
+    # Start a new MLflow run
+    with mlflow.start_run(run_name=run_name) as run:
+        # Autolog for TensorFlow
+        if using_tensor and autolog:
+            mlflow.tensorflow.autolog(log_models=True)
+        
+        # Autolog for XGBoost
+        if using_xgboost and autolog:
+            mlflow.xgboost.autolog(log_models=True)
+        
         # Log parameters
         for key, value in params.items():
             mlflow.log_param(key, value)
 
+        # Yield the run for use in the context
         yield run
 
 # import mlflow

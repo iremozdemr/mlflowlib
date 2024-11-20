@@ -6,9 +6,9 @@
 #twine upload dist/*
 
 import mlflow
-import tensorflow as tf
 from keras.callbacks import Callback
 from contextlib import contextmanager
+import tensorflow as tf
 
 class LearningRateLogger(Callback):
     """Callback to log learning rate at the end of each epoch."""
@@ -25,41 +25,45 @@ class LossAndErrorPrintingCallback(Callback):
         mlflow.log_metrics(logs, step=epoch)
 
 @contextmanager
-def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, autolog: bool = False,using_tensor: bool = False,using_xgboost: bool = True):
+def start_mlflow(
+    tracking_uri: str,
+    experiment_name: str,
+    run_name: str,
+    params: dict,
+    autolog: bool = False,
+    using_tensor: bool = False,
+    using_xgboost: bool = True,
+):
     """Context manager for starting an MLflow run.
     
-    This function sets up MLflow tracking, starts a new run, logs parameters, and optionally enables autologging.
-    
     Args:
-        tracking_uri (str): The URI for the MLflow tracking server.
-        experiment_name (str): The name of the experiment to log the run under.
-        run_name (str): The name of the run.
-        params (dict): A dictionary of parameters to log.
-        autolog (bool): If True, enables MLflow autologging for TensorFlow. Defaults to False.
-        
+        tracking_uri (str): MLflow tracking URI.
+        experiment_name (str): Experiment name.
+        run_name (str): Run name.
+        params (dict): Parameters to log.
+        autolog (bool): Enable or disable autologging.
+        using_tensor (bool): Enable TensorFlow autologging.
+        using_xgboost (bool): Enable XGBoost autologging.
+
     Yields:
-        run: The MLflow run object. Can be used to access run information if needed.
+        run: MLflow active run.
     """
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
     
     with mlflow.start_run(run_name=run_name) as run:
+        # TensorFlow autolog
         if using_tensor:
-            if autolog:
-                mlflow.tensorflow.autolog(log_models=True)
-            else:
-                mlflow.tensorflow.autolog(log_models=False)
-
+            mlflow.tensorflow.autolog(log_models=autolog)
+        # XGBoost autolog
         if using_xgboost:
-            if autolog:
-                mlflow.tensorflow.autolog(log_models=True)
-            else:
-                mlflow.tensorflow.autolog(log_models=False)
+            mlflow.xgboost.autolog(log_models=autolog)
 
+        # Log parameters
         for key, value in params.items():
             mlflow.log_param(key, value)
 
-        yield run  
+        yield run
 
 # import mlflow
 # from contextlib import contextmanager
