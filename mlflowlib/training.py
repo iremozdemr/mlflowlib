@@ -16,12 +16,17 @@ class LearningRateLogger(Callback):
         lr = self.model.optimizer.learning_rate
         if isinstance(lr, tf.keras.optimizers.schedules.LearningRateSchedule):
             lr = lr(self.model.optimizer.iterations)
+        if hasattr(lr, 'numpy'):
+            lr = lr.numpy()
+        else:
+            lr = float(lr)
         logs = logs or {}
-        mlflow.log_metric('learning_rate', float(lr.numpy()), step=epoch)
+        mlflow.log_metric('learning_rate', float(lr), step=epoch)
 
 class LossAndErrorPrintingCallback(Callback):
     """Callback to log metrics at the end of each epoch."""
     def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
         mlflow.log_metrics(logs, step=epoch)
 
 @contextmanager
@@ -29,7 +34,7 @@ def start_mlflow(
     tracking_uri: str,
     experiment_name: str,
     run_name: str,
-    params: dict,
+    params: dict = None,
     autolog: bool = False,
     using_tensor: bool = False,
     using_xgboost: bool = False,
@@ -38,8 +43,13 @@ def start_mlflow(
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
 
+    params = params or {}
+
     # Start a new MLflow run
     with mlflow.start_run(run_name=run_name) as run:
+
+        mlflow.tensorflow.autolog(log_models=False)
+
         # Autolog for TensorFlow
         if using_tensor and autolog:
             mlflow.tensorflow.autolog(log_models=True)
