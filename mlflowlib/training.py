@@ -5,13 +5,6 @@
 #Re-upload the new files:
 #twine upload dist/*
 
-#Delete all files in the dist folder
-#Update the version number in the setup.py file
-#Re-create the wheels:
-#python3 setup.py sdist bdist_wheel
-#Re-upload the new files:
-#twine upload dist/*
-
 import mlflow
 import tensorflow as tf
 from keras.callbacks import Callback
@@ -33,7 +26,7 @@ class LossAndErrorPrintingCallback(Callback):
             mlflow.log_metrics(logs, step=epoch)
 
 @contextmanager
-def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, metrics: dict, autolog: bool = False):
+def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params: dict, autolog: bool = False):
     """Context manager for starting an MLflow run.
     
     This function sets up MLflow tracking, starts a new run, logs parameters, logs metrics, 
@@ -62,10 +55,6 @@ def start_mlflow(tracking_uri: str, experiment_name: str, run_name: str, params:
         # Log parameters
         for key, value in params.items():
             mlflow.log_param(key, value)
-
-        # Log initial metrics
-        if metrics:
-            mlflow.log_metrics(metrics)
 
         yield run
 
